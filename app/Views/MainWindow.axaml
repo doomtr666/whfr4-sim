@@ -1,0 +1,77 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:App.ViewModels"
+        xmlns:whfr="using:Whfr4"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1500" d:DesignHeight="800"
+        x:Class="App.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Warhammer Fantasy Roleplay 4th edition, combat simulator">
+
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.DataTemplates>
+		<DataTemplate DataType="whfr:Character">
+			<StackPanel Orientation="Horizontal">
+				<Label Content="{Binding Name}" Width="120"/>
+				<Label Content="WS:"/>
+				<Label Content="{Binding WeaponSkill}" Width="30"/>
+				<Label Content="BS:"/>
+				<Label Content="{Binding BallisticSkill}" Width="30"/>
+				<Label Content="I:"/>
+				<Label Content="{Binding Initiative}" Width="30"/>
+				<Label Content="S:"/>
+				<Label Content="{Binding Strength}" Width="30"/>
+				<Label Content="T:"/>
+				<Label Content="{Binding Toughness}" Width="30"/>
+				<Label Content="W:"/>
+				<Label Content="{Binding Wounds}" Width="30"/>
+			</StackPanel>
+		</DataTemplate>
+	</Window.DataTemplates>
+
+	<StackPanel>
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+			<StackPanel Margin="4">
+				<Label Content="Character list"/>
+				<Border BorderBrush="Black"
+						BorderThickness="2"
+						CornerRadius="3"
+						Padding="4">
+					<ListBox Items="{Binding Characters}" SelectedIndex="{Binding SelectedCharacter}" Width="450" Height="500"/>
+				</Border>
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+					<Button Content="Add Character" Click="OnAddCharacterClick"/>
+					<Button Content="Edit Character" Click="OnEditCharacterClick" IsEnabled="{Binding CharacterButtonEnabled}"/>
+					<Button Content="Remove Character" Command="{Binding RemoveCharacterCommand}" IsEnabled="{Binding CharacterButtonEnabled}"/>
+				</StackPanel>
+			</StackPanel>
+			<StackPanel Margin="4">
+				<Label Content="Monster list"/>
+				<Border BorderBrush="Black"
+						BorderThickness="2"
+						CornerRadius="3"
+						Padding="4">
+					<ListBox Items="{Binding Monsters}" SelectedIndex="{Binding SelectedMonster}" Width="450" Height="500"/>
+				</Border>
+				<StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
+					<Button Content="Add Monster" Click="OnAddMonsterClick"/>
+					<Button Content="Edit Monster" Click="OnEditMonsterClick" IsEnabled="{Binding MonsterButtonEnabled}"/>
+					<Button Content="Remove Monster" Command="{Binding RemoveMonsterCommand}" IsEnabled="{Binding MonsterButtonEnabled}"/>
+				</StackPanel>
+			</StackPanel>
+			<StackPanel Margin="4">
+				<Label Content="Combat Log" />
+				<TextBox Margin="4" Width="450" Height="500" AcceptsReturn="True" TextWrapping="Wrap" Text="{Binding CombatLog}" BorderBrush="Black"/>
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+					<Button Content="Fight" Command="{Binding FightCommand}"/>
+					<Button Content="Stats" Command="{Binding StatsCommand}"/>
+				</StackPanel>
+			</StackPanel>
+		</StackPanel>
+	</StackPanel>
+
+</Window>

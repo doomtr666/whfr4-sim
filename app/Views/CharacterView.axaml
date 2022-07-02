@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		     xmlns:vm="using:App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="300"
+             x:Class="App.Views.CharacterView">
+	
+	<Design.DataContext>
+		<vm:CharacterViewModel/>
+	</Design.DataContext>
+	
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Name</Label>
+			<TextBox  Width="120" Text="{Binding Character.Name}"/>
+		</StackPanel>
+		
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Weapon Skill</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.WeaponSkill}"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Ballistic Skill</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.BallisticSkill}"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Initiative</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.Initiative}"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Strength</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.Strength}"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Toughness</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.Toughness}"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Wounds</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.Wounds}"/>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal" >
+			<Button Content="Ok" Click="OnOkClick"/>
+			<Button Content="Cancel" Click="OnCancelClick"/>
+		</StackPanel>
+		
+	</StackPanel>
+</Window>
