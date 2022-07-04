@@ -46,6 +46,11 @@
 			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.Wounds}"/>
 		</StackPanel>
 
+		<StackPanel Orientation="Horizontal">
+			<Label Width="100">Weapon</Label>
+			<NumericUpDown Width="110" ClipValueToMinMax="True" Minimum="1" Maximum="100" Increment="1" Value="{Binding Character.WeaponDamage}"/>
+		</StackPanel>
+
 		<StackPanel Orientation="Horizontal" >
 			<Button Content="Ok" Click="OnOkClick"/>
 			<Button Content="Cancel" Click="OnCancelClick"/>

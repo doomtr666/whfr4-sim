@@ -67,11 +67,10 @@
             {
                 active.Advantage++;
                 passive.Advantage = 0;
-                int weapongDamage = 4;
 
-                var damage = (weapongDamage + Dice.Bonus(active.Character.Strength) + test.SuccessLevel) - Dice.Bonus(passive.Character.Toughness);
+                var damage = ((int)active.Character.WeaponDamage + Dice.Bonus(active.Character.Strength) + test.SuccessLevel) - Dice.Bonus(passive.Character.Toughness);
 
-                log.Debug("{0} + {1} + {2} - {3}", weapongDamage, Dice.Bonus(active.Character.Strength), test.SuccessLevel, Dice.Bonus(passive.Character.Toughness));
+                log.Debug("{0} + {1} + {2} - {3}", active.Character.WeaponDamage, Dice.Bonus(active.Character.Strength), test.SuccessLevel, Dice.Bonus(passive.Character.Toughness));
                 passive.Wounds -= damage;
 
                 log.Info("{0} hits {1}, {2} damage", active.Character.Name, passive.Character.Name, damage);
@@ -138,6 +137,19 @@
                 {
                     log.Info("NPCs wins");
                     return false;
+                }
+
+                // any character in numeric inferiority looses 1 advantage at the end of the round
+                foreach (var attacker in players)
+                {
+                    if (attacker.IsDown)
+                        continue;
+
+                    if(NumberOfAttackers(attacker, players) > 1)
+                    {
+                        if (attacker.Advantage > 1)
+                            attacker.Advantage--;
+                    }
                 }
 
                 round++;

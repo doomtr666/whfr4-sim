@@ -17,8 +17,22 @@ namespace App.ViewModels
 
         public MainWindowViewModel()
         {
-            Characters = new ObservableCollection<Character> { new Character { Name = "Bob", WeaponSkill = 42, BallisticSkill = 27, Initiative = 37, Toughness = 32, Strength = 41, Wounds = 16 } };
-            Monsters = new ObservableCollection<Character> { new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12 } };
+            Characters = new ObservableCollection<Character>
+            {
+                new Character { Name = "Bob", WeaponSkill = 42, BallisticSkill = 27, Initiative = 37, Toughness = 32, Strength = 41, Wounds = 16, WeaponDamage = 4,},
+                new Character { Name = "Alice", WeaponSkill = 39, BallisticSkill = 31, Initiative = 25, Toughness = 42, Strength = 32, Wounds = 14, WeaponDamage = 2 }
+            };
+
+            Monsters = new ObservableCollection<Character>
+            {
+                new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12, WeaponDamage = 4 },
+                new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12, WeaponDamage = 4 },
+                new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12, WeaponDamage = 4 },
+                new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12, WeaponDamage = 4 },
+                new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12, WeaponDamage = 4 },
+                new Character { Name = "Zombie", WeaponSkill = 15, BallisticSkill = 1, Initiative = 5, Toughness = 30, Strength = 30, Wounds = 12, WeaponDamage = 4 }
+            };
+
             selectedCharacter = -1;
             characterButtonEnabled = false;
             selectedMonster = -1;
@@ -29,7 +43,7 @@ namespace App.ViewModels
 
         public int SelectedCharacter
         {
-            get => selectedCharacter; 
+            get => selectedCharacter;
             set
             {
                 this.RaiseAndSetIfChanged(ref selectedCharacter, value);
@@ -41,8 +55,8 @@ namespace App.ViewModels
 
         public ObservableCollection<Character> Monsters { get; }
 
-        public int SelectedMonster 
-        { 
+        public int SelectedMonster
+        {
             get => selectedMonster;
             set
             {
