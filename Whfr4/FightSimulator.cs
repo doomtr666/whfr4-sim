@@ -3,14 +3,12 @@
 
     public class FightSimulator
     {
-        private DiceRoller Dice { get; }
 
         public FightSimulator()
         {
-            Dice = new DiceRoller();
         }
 
-        public bool GroupDown(IList<FightingCharacter> players, uint group)
+        public bool GroupDown(IList<FightingCharacter> players, int group)
         {
             bool allDown = true;
             
@@ -26,12 +24,12 @@
             return allDown;
         }
 
-        public uint NumberOfAttackers(FightingCharacter target, IList<FightingCharacter> players)
+        public int NumberOfAttackers(FightingCharacter target, IList<FightingCharacter> players)
         {
-            uint attackers = 0;
+            int attackers = 0;
             foreach(var p in players)
             {
-                if (p.IsDown)
+                if (p.IsDown || p.Conditions.Has(Condition.Prone))
                     continue;
                 if (p.Target == target)
                     attackers++;
@@ -57,33 +55,112 @@
             return active.Target;
         }
 
-        void Attack(ILogger log, FightingCharacter active, FightingCharacter passive)
+        int GetAttackerBonus(ILogger log, IList<FightingCharacter> players, FightingCharacter attacker, FightingCharacter defender)
         {
-            DiceRoller.OpposedTestResult test;
-            Dice.OpposedTest(active.Character.WeaponSkill + 10 * active.Advantage, passive.Character.WeaponSkill + 10 * passive.Advantage, out test);
+            if (defender.Conditions.Has(Condition.Stunned))
+                attacker.Advantage++;
+
+            var bonus = attacker.Advantage * 10;
+
+            if (defender.Conditions.Has(Condition.Prone))
+                bonus += 20;
+
+            var attackerCount = NumberOfAttackers(defender, players);
+            if (attackerCount == 2)
+                bonus += 20;
+            if (attackerCount >= 3)
+                bonus += 40;
+
+            return bonus;
+        }
+
+        int GetDefenderBonus(ILogger log, FightingCharacter attacker, FightingCharacter defender)
+        {
+            return defender.Advantage * 10;
+        }
+
+        void ResolveConditions(ILogger log, FightingCharacter attacker)
+        {
+            if (attacker.Conditions.Has(Condition.Bleeding))
+                attacker.Wounds--;
+
+            if (attacker.Conditions.Has(Condition.Stunned))
+                if (Dice.SimpleTest(attacker.Character.Toughness))
+                    attacker.Conditions.Remove(Condition.Stunned);
+        }
+
+        void Attack(ILogger log, IList<FightingCharacter> players, FightingCharacter attacker, FightingCharacter defender)
+        {
+            Dice.OpposedTestResult test;
+
+            int attackerBonus = GetAttackerBonus(log, players, attacker, defender);
+            int defenderBonus = GetDefenderBonus(log, attacker, defender);
+
+            Dice.OpposedTest(attacker.Character.WeaponSkill + attackerBonus, defender.Character.WeaponSkill + defenderBonus, out test);
+
             log.Debug("{0}", test);
 
-            if(test.Winner == 1)
+            // regular test
+            if (test.Winner == 1)
             {
-                active.Advantage++;
-                passive.Advantage = 0;
+                attacker.Advantage++;
+                defender.Advantage = 0;
 
-                var damage = ((int)active.Character.WeaponDamage + Dice.Bonus(active.Character.Strength) + test.SuccessLevel) - Dice.Bonus(passive.Character.Toughness);
+                var damage = attacker.Character.WeaponDamage + attacker.Character.Strength.Bonus() + test.SuccessLevel - defender.Character.Toughness.Bonus();
 
-                log.Debug("{0} + {1} + {2} - {3}", active.Character.WeaponDamage, Dice.Bonus(active.Character.Strength), test.SuccessLevel, Dice.Bonus(passive.Character.Toughness));
-                passive.Wounds -= damage;
+                log.Debug("{0} + {1} + {2} - {3}", attacker.Character.WeaponDamage, attacker.Character.Strength.Bonus(), test.SuccessLevel, defender.Character.Toughness.Bonus());
+                defender.Wounds -= damage;
 
-                log.Info("{0} hits {1}, {2} damage", active.Character.Name, passive.Character.Name, damage);
-                if (passive.IsDown)
-                    log.Info("{0} is down", passive.Character.Name);
-
+                log.Info("{0} hits {1}, {2} damage", attacker.Character.Name, defender.Character.Name, damage);
             }
             else
             {
-                active.Advantage = 0;
-                passive.Advantage++;
-                log.Info("{0} misses {1}", active.Character.Name, passive.Character.Name);
+                attacker.Advantage = 0;
+                defender.Advantage++;
+                log.Info("{0} misses {1}", attacker.Character.Name, defender.Character.Name);
             }
+
+            // handle critical / fumble
+            if (test.Test1.Roll.IsDouble())
+            {
+                if (test.Test1.Success)
+                {
+                    var critical = Critical.GetCritical(Dice.D100.Localize(), Dice.D100);
+
+                    log.Info("*** {0} critical hits ({1}) {2}", attacker.Character.Name, critical.Description, defender.Character.Name);
+                    defender.Wounds -= critical.Wounds;
+                    critical.Apply(defender);
+                    defender.Advantage = 0;
+                }
+                else
+                {
+                    log.Info("*** {0} fumbles", attacker.Character.Name);
+                }
+            }
+
+            if (test.Test2.Roll.IsDouble())
+            {
+                if (test.Test2.Success)
+                {
+                    var critical = Critical.GetCritical(Dice.D100.Localize(), Dice.D100);
+
+                    log.Info("*** {0} critical hits ({1}) {2}", defender.Character.Name, critical.Description, attacker.Character.Name);
+                    attacker.Wounds -= critical.Wounds;
+                    critical.Apply(attacker);
+                    attacker.Advantage = 0;
+                }
+                else
+                {
+                    log.Info("*** {0} fumble", defender.Character.Name);
+                }
+            }
+
+            ResolveConditions(log, attacker);
+
+            if(attacker.IsDown)
+                log.Info("{0} is down", attacker.Character.Name);
+            if (defender.IsDown)
+                log.Info("{0} is down", defender.Character.Name);
         }
 
         public bool SimulateFight(ILogger log, IList<Character> pc, IList<Character> npc)
@@ -99,13 +176,10 @@
 
             // order by Initiative
             players.Sort((a,b) => -a.Character.Initiative.CompareTo(b.Character.Initiative));
-            for(var c = 0; c < players.Count; c++)
-            {
-                log.Info("Name:{0}, Init: {1}", players[c].Character.Name, players[c].Character.Initiative);
-                players[c].Order = (uint)c;
-            }
+            foreach(var c in players)
+                log.Info("Name:{0}, Init: {1}", c.Character.Name, c.Character.Initiative);
 
-            uint round = 0;
+            int round = 0;
             while(true)
             {
                 // start the round
@@ -113,8 +187,11 @@
 
                 foreach (var attacker in players)
                 {
-                    if (attacker.IsDown)
+                    if (attacker.IsDown || attacker.Conditions.Has(Condition.Stunned))
+                    {
+                        ResolveConditions(log, attacker);
                         continue;
+                    }
 
                     log.Debug("{0}' turn", attacker.Character.Name);
 
@@ -123,7 +200,7 @@
                     if (target == null)
                         break;
 
-                    Attack(log, attacker, target);
+                    Attack(log, players, attacker, target);
                 }
 
                 // check if either group is down
@@ -169,7 +246,6 @@
             }
 
             log.Info("Win probability {0:0.0}%", 100.0f * counter / trials);
-
         }
     }
 }

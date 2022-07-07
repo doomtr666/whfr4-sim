@@ -1,13 +1,13 @@
 ﻿namespace Whfr4
 {
-    public class DiceRoller
+    public static class Dice
     {
         public struct DramaticTestResult
         {
-            public uint SkillBase;
+            public int SkillBase;
             public bool Success;
             public int SuccessLevel;
-            public uint Roll;
+            public int Roll;
             public override string ToString()
             {
                 return string.Format("(S: {0}, Success: {1}, SL: {2}, Roll: {3})", SkillBase, Success, SuccessLevel, Roll);
@@ -16,9 +16,9 @@
 
         public struct OpposedTestResult
         {
-            public uint ActiveBase;
-            public uint PassiveBase;
-            public uint Winner;
+            public int ActiveBase;
+            public int PassiveBase;
+            public int Winner;
             public int SuccessLevel;
             public DramaticTestResult Test1;
             public DramaticTestResult Test2;
@@ -29,31 +29,31 @@
             }
         }
 
-        Random _rand;
+        static readonly Random _rand = new Random();
 
-        public DiceRoller()
+        public static int D10 { get { return _rand.Next(1, 10); } }
+        public static int D100 { get { return _rand.Next(1, 100); } }
+
+        public static bool SimpleTest(int skillBase)
         {
-            _rand = new Random();
+            var roll = D100;
+            if (roll < 6)
+                return true;
+            if (roll > 95)
+                return false;
+            return roll <= skillBase;
         }
 
-        public uint D10 { get { return (uint)_rand.Next(1, 10); } }
-        public uint D100 { get { return (uint)_rand.Next(1, 100); } }
-
-        public int Bonus(uint value)
-        {
-            return (int)value / 10;
-        }
-
-        public void DramaticTest(uint skillBase, out DramaticTestResult result)
+        public static void DramaticTest(int skillBase, out DramaticTestResult result)
         {
             var roll = D100;
             result.SkillBase = skillBase;
             result.Success = roll <= skillBase;
             result.Roll = roll;
-            result.SuccessLevel = (int)Bonus(skillBase) - (int)Bonus(roll);
+            result.SuccessLevel = skillBase.Bonus() - roll.Bonus();
         }
 
-        public void OpposedTest(uint activeBase, uint passiveBase, out OpposedTestResult result)
+        public static void OpposedTest(int activeBase, int passiveBase, out OpposedTestResult result)
         {
             DramaticTest(activeBase, out result.Test1);
             DramaticTest(passiveBase, out result.Test2);
